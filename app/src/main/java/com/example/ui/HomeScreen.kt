@@ -156,7 +156,22 @@ fun HomeScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, bottom = 24.dp)
+                    .testTag("footer_created_by"),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Created by @vijaythakor.unfiltered",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.2.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+            }
         }
     }
 }
