@@ -159,7 +159,7 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp, bottom = 24.dp)
+                    .padding(top = 12.dp, bottom = 12.dp)
                     .testTag("footer_created_by"),
                 contentAlignment = Alignment.Center
             ) {
@@ -172,6 +172,10 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
