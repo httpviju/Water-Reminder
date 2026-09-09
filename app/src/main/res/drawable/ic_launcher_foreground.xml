@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Centered water drop in 66dp safe zone (between 21 and 87) -->
+    <!-- Water drop main body -->
+    <path
+        android:pathData="M54,27 C54,27 34,51 34,64 C34,75.05 42.95,84 54,84 C65.05,84 74,75.05 74,64 C74,51 54,27 54,27 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="54"
+                android:startY="27"
+                android:endX="54"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#B3E5FC" android:offset="0.6" />
+                <item android:color="#81D4FA" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Water drop gloss highlight -->
+    <path
+        android:fillColor="#80FFFFFF"
+        android:pathData="M43,58 C41.5,62 42,67 44,70 C44.5,70.8 45.5,70.5 45.7,69.6 C46.5,66 45.5,61.5 44.5,57.5 C44.2,56.5 43.3,57 43,58 Z" />
+</vector>
