@@ -1,6 +1,9 @@
 package com.example.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -48,12 +52,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.BrightBlue
 import com.example.ui.theme.DeepBluePrimary
+import com.example.ui.theme.SpotifyGreen
+import com.example.ui.theme.SpotifyGreenBright
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -62,6 +70,8 @@ fun SettingsScreen(
     onSetDailyTarget: (Int) -> Unit,
     onSetReminderInterval: (Int) -> Unit,
     onToggleReminder: (Boolean) -> Unit,
+    onToggleWaterAlarmSound: (Boolean) -> Unit,
+    onTestWaterAlarmSound: () -> Unit,
     onSetDarkMode: (String) -> Unit,
     onResetData: () -> Unit,
     modifier: Modifier = Modifier
@@ -145,12 +155,12 @@ fun SettingsScreen(
             }
         }
 
-        // Reminder Interval Setting Card
+        // Reminder Interval & Water Sound Card
         item {
             val intervals = listOf(30, 45, 60, 90, 120)
             SettingsCard(
-                title = "Reminder Interval",
-                subtitle = "How often you want to be nudged to drink",
+                title = "Water Alarm & Reminders",
+                subtitle = "Sound alarm with real water droplet & pouring audio",
                 icon = Icons.Default.Alarm
             ) {
                 Row(
@@ -159,7 +169,7 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Enable Reminders",
+                        text = "Enable Water Reminders",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -167,13 +177,19 @@ fun SettingsScreen(
                         checked = uiState.reminderEnabled,
                         onCheckedChange = onToggleReminder,
                         colors = SwitchDefaults.colors(
-                            checkedTrackColor = DeepBluePrimary
+                            checkedTrackColor = SpotifyGreen,
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
 
                 if (uiState.reminderEnabled) {
                     Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Reminder Interval",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -193,16 +209,72 @@ fun SettingsScreen(
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Water Alarm Sound Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "Water Alarm Sound 💧",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Play real splashing water sound",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = uiState.waterAlarmSoundEnabled,
+                            onCheckedChange = onToggleWaterAlarmSound,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = SpotifyGreen,
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Test Water Alarm Sound Button
+                    ElevatedButton(
+                        onClick = onTestWaterAlarmSound,
+                        colors = ButtonDefaults.elevatedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("button_test_water_sound")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VolumeUp,
+                            contentDescription = "Sound",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Play Water Alarm Sound (Test) 🌊",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
 
         // Theme / Appearance Card
         item {
-            val modes = listOf("system" to "System", "light" to "Light", "dark" to "Dark")
+            val modes = listOf("dark" to "Spotify Dark", "light" to "Spotify Light", "system" to "System")
             SettingsCard(
-                title = "Appearance",
-                subtitle = "Choose theme appearance (Light or comfortable Dark mode)",
+                title = "Spotify Theme",
+                subtitle = "Choose between Spotify signature Dark or Light green aesthetic",
                 icon = Icons.Default.BrightnessMedium
             ) {
                 Row(
@@ -214,7 +286,7 @@ fun SettingsScreen(
                         FilterChip(
                             selected = isSelected,
                             onClick = { onSetDarkMode(modeKey) },
-                            label = { Text(modeLabel) },
+                            label = { Text(modeLabel, fontSize = 12.sp) },
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
                                 .weight(1f)
@@ -262,8 +334,9 @@ fun SettingsScreen(
             }
         }
 
-        // Creator / About Card
+        // Creator / About Card with direct Instagram link
         item {
+            val context = LocalContext.current
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.surface,
@@ -271,6 +344,18 @@ fun SettingsScreen(
                 shadowElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable {
+                        val uri = Uri.parse("https://instagram.com/vijaythakor.unfiltered")
+                        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                            setPackage("com.instagram.android")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                        }
+                    }
                     .testTag("card_creator_info")
             ) {
                 Box(
@@ -296,13 +381,13 @@ fun SettingsScreen(
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = "Creator",
-                                    tint = BrightBlue,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.width(14.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Created by",
                                 style = MaterialTheme.typography.labelMedium,
@@ -311,12 +396,12 @@ fun SettingsScreen(
                             Text(
                                 text = "@vijaythakor.unfiltered",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = BrightBlue
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Water Reminder • Hydration Tracker",
+                                text = "Tap to open Instagram Profile ↗",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                             )
                         }
                     }

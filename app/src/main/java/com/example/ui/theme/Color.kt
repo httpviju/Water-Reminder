@@ -3,67 +3,94 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-// Light Mode Water-inspired Palette
-val DeepBluePrimary = Color(0xFF0284C7)
-val DeepBluePrimaryDark = Color(0xFF0369A1)
-val BrightBlue = Color(0xFF0EA5E9)
-val LightSkyBlue = Color(0xFF38BDF8)
-val SoftIceBlue = Color(0xFFBAE6FD)
-val PaleSkyBlue = Color(0xFFE0F2FE)
-val UltraLightBlueBg = Color(0xFFF4F9FD)
+// Spotify Iconic Palette
+val SpotifyGreen = Color(0xFF1DB954)
+val SpotifyGreenBright = Color(0xFF1ED760)
+val SpotifyGreenDark = Color(0xFF169C46)
+val SpotifyGreenMint = Color(0xFF57E389)
+val SpotifyGreenSoft = Color(0xFF86EFAC)
+val SpotifyGreenContainerDark = Color(0xFF0F381E)
+val SpotifyGreenContainerLight = Color(0xFFDCFCE7)
+
+// Spotify Dark Canvas (Iconic Spotify UI)
+val SpotifyBlack = Color(0xFF121212)
+val SpotifyDarkSurface = Color(0xFF181818)
+val SpotifyDarkElevated = Color(0xFF242424)
+val SpotifyDarkSurfaceVariant = Color(0xFF282828)
+val SpotifyBorderDark = Color(0xFF333333)
+val SpotifyTextPrimaryDark = Color(0xFFFFFFFF)
+val SpotifyTextSecondaryDark = Color(0xFFB3B3B3)
+val SpotifyTextTertiaryDark = Color(0xFF727272)
+
+// Spotify Light Canvas
+val SpotifyLightBg = Color(0xFFF9FAF9)
+val SpotifyLightSurface = Color(0xFFFFFFFF)
+val SpotifyLightSurfaceVariant = Color(0xFFF0FDF4)
+val SpotifyTextPrimaryLight = Color(0xFF121212)
+val SpotifyTextSecondaryLight = Color(0xFF4B5563)
+val SpotifyBorderLight = Color(0xFFE5E7EB)
+
+// Compatibility Aliases mapped to Spotify Theme
+val DeepBluePrimary = SpotifyGreen
+val DeepBluePrimaryDark = SpotifyGreenDark
+val BrightBlue = SpotifyGreenBright
+val LightSkyBlue = SpotifyGreenMint
+val SoftIceBlue = SpotifyGreenSoft
+val PaleSkyBlue = SpotifyGreenContainerLight
+val UltraLightBlueBg = SpotifyLightBg
 val PureWhite = Color(0xFFFFFFFF)
-val TextPrimaryLight = Color(0xFF0F172A)
-val TextSecondaryLight = Color(0xFF475569)
-val TextTertiaryLight = Color(0xFF64748B)
-val BorderLight = Color(0xFFE2E8F0)
+val TextPrimaryLight = SpotifyTextPrimaryLight
+val TextSecondaryLight = SpotifyTextSecondaryLight
+val TextTertiaryLight = Color(0xFF6B7280)
+val BorderLight = SpotifyBorderLight
 
-// Dark Mode Palette (deep, comfortable, water-inspired, not pure black)
-val DarkBackground = Color(0xFF0A121E)
-val DarkSurface = Color(0xFF111D2E)
-val DarkSurfaceVariant = Color(0xFF19283E)
-val DarkPrimary = Color(0xFF38BDF8)
-val DarkSecondary = Color(0xFF7DD3FC)
-val DarkTertiary = Color(0xFF0EA5E9)
-val TextPrimaryDark = Color(0xFFF1F5F9)
-val TextSecondaryDark = Color(0xFF94A3B8)
-val TextTertiaryDark = Color(0xFF64748B)
-val BorderDark = Color(0xFF1E2E48)
+val DarkBackground = SpotifyBlack
+val DarkSurface = SpotifyDarkSurface
+val DarkSurfaceVariant = SpotifyDarkSurfaceVariant
+val DarkPrimary = SpotifyGreenBright
+val DarkSecondary = SpotifyGreen
+val DarkTertiary = SpotifyGreenMint
+val TextPrimaryDark = SpotifyTextPrimaryDark
+val TextSecondaryDark = SpotifyTextSecondaryDark
+val TextTertiaryDark = SpotifyTextTertiaryDark
+val BorderDark = SpotifyBorderDark
 
-// Water Gradients for specific visual elements (circle, primary buttons, headers, droplet)
+// Spotify Water Gradients
 val WaterProgressBrush = Brush.sweepGradient(
     listOf(
-        Color(0xFF0284C7),
-        Color(0xFF0EA5E9),
-        Color(0xFF38BDF8),
-        Color(0xFF67E8F9),
-        Color(0xFF0284C7)
+        SpotifyGreen,
+        SpotifyGreenBright,
+        SpotifyGreenMint,
+        Color(0xFF22C55E),
+        SpotifyGreen
     )
 )
 
 val WaterButtonBrush = Brush.horizontalGradient(
     listOf(
-        Color(0xFF0284C7),
-        Color(0xFF0EA5E9)
+        SpotifyGreen,
+        SpotifyGreenBright
     )
 )
 
 val WaterHeaderBrush = Brush.verticalGradient(
     listOf(
-        Color(0xFFE0F2FE).copy(alpha = 0.6f),
-        Color(0x00F4F9FD)
+        SpotifyGreen.copy(alpha = 0.25f),
+        Color.Transparent
     )
 )
 
 val WaterDropBrush = Brush.verticalGradient(
     listOf(
-        Color(0xFF38BDF8),
-        Color(0xFF0284C7)
+        SpotifyGreenBright,
+        SpotifyGreenDark
     )
 )
 
 val WaterWaveBrush = Brush.verticalGradient(
     listOf(
-        Color(0xFF38BDF8).copy(alpha = 0.45f),
-        Color(0xFF0284C7).copy(alpha = 0.85f)
+        SpotifyGreenBright.copy(alpha = 0.55f),
+        SpotifyGreen.copy(alpha = 0.85f)
     )
 )
+

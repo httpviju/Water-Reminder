@@ -8,6 +8,7 @@ import com.example.data.DayProgress
 import com.example.data.WaterDatabase
 import com.example.data.WaterLog
 import com.example.data.WaterRepository
+import com.example.util.WaterSoundManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,8 @@ data class WaterUiState(
     val nextReminderTime: String = "10:30 AM",
     val reminderEnabled: Boolean = true,
     val reminderIntervalMinutes: Int = 90,
-    val darkModeSetting: String = "system", // "system", "light", "dark"
+    val waterAlarmSoundEnabled: Boolean = true,
+    val darkModeSetting: String = "dark", // Default to Spotify Dark mode
     val todayLogs: List<WaterLog> = emptyList(),
     val allLogs: List<WaterLog> = emptyList(),
     val weeklyProgress: List<DayProgress> = emptyList()
@@ -49,7 +51,10 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
     private val _reminderEnabled = MutableStateFlow(prefs.getBoolean("reminder_enabled", true))
     val reminderEnabled: StateFlow<Boolean> = _reminderEnabled.asStateFlow()
 
-    private val _darkModeSetting = MutableStateFlow(prefs.getString("dark_mode", "system") ?: "system")
+    private val _waterAlarmSoundEnabled = MutableStateFlow(prefs.getBoolean("alarm_sound_enabled", true))
+    val waterAlarmSoundEnabled: StateFlow<Boolean> = _waterAlarmSoundEnabled.asStateFlow()
+
+    private val _darkModeSetting = MutableStateFlow(prefs.getString("dark_mode", "dark") ?: "dark")
     val darkModeSetting: StateFlow<String> = _darkModeSetting.asStateFlow()
 
     private val _nextReminderTime = MutableStateFlow(calculateNextReminderTime(_reminderInterval.value))
@@ -78,6 +83,7 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
         val dailyTargetMl: Int,
         val reminderEnabled: Boolean,
         val reminderInterval: Int,
+        val waterAlarmSound: Boolean,
         val darkModeSetting: String,
         val nextReminderTime: String
     )
@@ -86,10 +92,10 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
         _dailyTargetMl,
         _reminderEnabled,
         _reminderInterval,
-        _darkModeSetting,
-        _nextReminderTime
-    ) { target, remEnabled, remInterval, darkSetting, nextRem ->
-        UserPreferences(target, remEnabled, remInterval, darkSetting, nextRem)
+        _waterAlarmSoundEnabled,
+        combine(_darkModeSetting, _nextReminderTime) { dark, nextRem -> Pair(dark, nextRem) }
+    ) { target, remEnabled, remInterval, alarmSound, darkAndRem ->
+        UserPreferences(target, remEnabled, remInterval, alarmSound, darkAndRem.first, darkAndRem.second)
     }
 
     val uiState: StateFlow<WaterUiState> = combine(
@@ -112,6 +118,7 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
             nextReminderTime = prefs.nextReminderTime,
             reminderEnabled = prefs.reminderEnabled,
             reminderIntervalMinutes = prefs.reminderInterval,
+            waterAlarmSoundEnabled = prefs.waterAlarmSound,
             darkModeSetting = prefs.darkModeSetting,
             todayLogs = todayList,
             allLogs = allList,
@@ -124,10 +131,28 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     fun addWater(amountMl: Int) {
+        if (_waterAlarmSoundEnabled.value) {
+            WaterSoundManager.playWaterDropSound()
+        }
         viewModelScope.launch {
             repository.logWater(amountMl)
-            // recalculate next reminder
             _nextReminderTime.value = calculateNextReminderTime(_reminderInterval.value)
+        }
+    }
+
+    fun playWaterAlarmSound() {
+        WaterSoundManager.playWaterAlarmSound()
+    }
+
+    fun playWaterDropSound() {
+        WaterSoundManager.playWaterDropSound()
+    }
+
+    fun toggleWaterAlarmSound(enabled: Boolean) {
+        _waterAlarmSoundEnabled.value = enabled
+        prefs.edit().putBoolean("alarm_sound_enabled", enabled).apply()
+        if (enabled) {
+            WaterSoundManager.playWaterAlarmSound()
         }
     }
 
@@ -155,6 +180,9 @@ class WaterViewModel(application: Application) : AndroidViewModel(application) {
         prefs.edit().putBoolean("reminder_enabled", enabled).apply()
         if (enabled) {
             _nextReminderTime.value = calculateNextReminderTime(_reminderInterval.value)
+            if (_waterAlarmSoundEnabled.value) {
+                WaterSoundManager.playWaterAlarmSound()
+            }
         }
     }
 

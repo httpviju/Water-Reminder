@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
             val isDarkTheme = when (uiState.darkModeSetting) {
                 "dark" -> true
                 "light" -> false
-                else -> systemDark
+                else -> true // Spotify iconic dark aesthetic by default
             }
 
             WaterReminderTheme(darkTheme = isDarkTheme) {
@@ -114,8 +114,8 @@ fun WaterApp(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            selectedTextColor = BrightBlue,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -147,6 +147,8 @@ fun WaterApp(
                     onSetDailyTarget = { target -> viewModel.setDailyTarget(target) },
                     onSetReminderInterval = { interval -> viewModel.setReminderInterval(interval) },
                     onToggleReminder = { enabled -> viewModel.toggleReminder(enabled) },
+                    onToggleWaterAlarmSound = { enabled -> viewModel.toggleWaterAlarmSound(enabled) },
+                    onTestWaterAlarmSound = { viewModel.playWaterAlarmSound() },
                     onSetDarkMode = { mode -> viewModel.setDarkModeSetting(mode) },
                     onResetData = { viewModel.resetAllData() }
                 )
