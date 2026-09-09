@@ -1,0 +1,75 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Restore Keystore & Secrets
+        run: |
+          if [ -f "debug.keystore.base64" ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+          fi
+          if [ ! -f ".env" ]; then
+            cp .env.example .env || touch .env
+          fi
+          chmod +x gradlew
+
+      - name: Build APK with Gradle
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Prepare APK Asset
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/debug/app-debug.apk release-assets/WaterReminder.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WaterReminder-APK
+          path: release-assets/WaterReminder.apk
+
+      - name: Publish to GitHub Releases
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v1.0.{0}', github.run_number) }}
+          name: ${{ format('Water Reminder Release v1.0.{0}', github.run_number) }}
+          body: |
+            ### 💧 Water Reminder Application
+            Created by **@vijaythakor.unfiltered**
+
+            #### Download & Install:
+            Click on **WaterReminder.apk** below to download and install directly on your Android phone.
+          files: release-assets/WaterReminder.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
