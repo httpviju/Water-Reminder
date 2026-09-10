@@ -9,20 +9,18 @@ import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.sin
-import kotlin.random.Random
 
 object WaterSoundManager {
     private const val SAMPLE_RATE = 44100
     private val scope = CoroutineScope(Dispatchers.Default)
 
     /**
-     * Synthesizes a realistic, crisp water droplet "bloop / plink" sound.
-     * Played whenever water is logged.
+     * Synthesizes a soft, pleasant water droplet "tip" sound.
      */
-    fun playWaterDropSound(baseFreq: Float = 540f) {
+    fun playWaterDropSound(baseFreq: Float = 650f) {
         scope.launch {
             try {
-                val durationMs = 160
+                val durationMs = 150
                 val numSamples = (SAMPLE_RATE * durationMs) / 1000
                 val samples = ShortArray(numSamples)
                 var phase = 0.0
@@ -31,16 +29,17 @@ object WaterSoundManager {
                     val t = i.toDouble() / SAMPLE_RATE
                     val progress = i.toDouble() / numSamples
 
-                    // Exponential upward frequency chirp characteristic of water drop cavity
-                    val freq = baseFreq + (1250f * Math.pow(progress, 0.45)).toFloat()
+                    // Upward frequency chirp characteristic of a water drop
+                    val freq = baseFreq + (1000f * Math.pow(progress, 0.5)).toFloat()
 
                     // Quick attack, exponential decay
-                    val attack = if (t < 0.003) (t / 0.003) else 1.0
-                    val decay = exp(-22.0 * t)
+                    val attack = if (t < 0.005) (t / 0.005) else 1.0
+                    val decay = exp(-25.0 * t)
                     val envelope = attack * decay
 
                     phase += 2.0 * PI * freq / SAMPLE_RATE
-                    val sampleVal = (sin(phase) * envelope * 0.85 * Short.MAX_VALUE).toInt()
+                    // 0.6 volume multiplier for a soft, pleasant sound
+                    val sampleVal = (sin(phase) * envelope * 0.6 * Short.MAX_VALUE).toInt()
                     samples[i] = sampleVal.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
                 }
 
@@ -51,51 +50,29 @@ object WaterSoundManager {
     }
 
     /**
-     * Synthesizes an authentic water pouring & bubbling cascade sound.
-     * Played for Water Alarm and hydration reminders!
+     * Synthesizes a sequence of gentle "tip tip" water droplets for the alarm.
+     * Replaces the harsh bubbling noise with a clean, relaxing sound.
      */
     fun playWaterAlarmSound() {
         scope.launch {
             try {
-                val durationMs = 1800
+                val durationMs = 1500
                 val numSamples = (SAMPLE_RATE * durationMs) / 1000
                 val samples = ShortArray(numSamples)
                 val buffer = DoubleArray(numSamples)
 
-                // 1. Gentle liquid stream ambience
-                var prevNoise = 0.0
-                val random = Random(42)
-                for (i in 0 until numSamples) {
-                    val white = (random.nextDouble() * 2.0 - 1.0)
-                    prevNoise = prevNoise * 0.93 + white * 0.07
-                    val t = i.toDouble() / SAMPLE_RATE
-                    val env = when {
-                        t < 0.2 -> t / 0.2
-                        t > 1.4 -> (1.8 - t) / 0.4
-                        else -> 1.0
-                    }
-                    buffer[i] = prevNoise * 0.18 * env
-                }
-
-                // 2. Cascading water droplets and splash harmonics
+                // Sequence of "tip tip" sounds
                 data class Droplet(val startMs: Int, val freq: Float, val vol: Double)
                 val droplets = listOf(
-                    Droplet(50, 480f, 0.55),
-                    Droplet(140, 720f, 0.70),
-                    Droplet(260, 580f, 0.60),
-                    Droplet(380, 880f, 0.75),
-                    Droplet(520, 640f, 0.65),
-                    Droplet(660, 920f, 0.80),
-                    Droplet(800, 750f, 0.70),
-                    Droplet(950, 600f, 0.65),
-                    Droplet(1100, 820f, 0.75),
-                    Droplet(1240, 700f, 0.60),
-                    Droplet(1400, 960f, 0.50)
+                    Droplet(100, 650f, 0.6),   // tip
+                    Droplet(400, 650f, 0.6),   // tip
+                    Droplet(700, 850f, 0.65),  // tip (slightly higher pitch)
+                    Droplet(1000, 650f, 0.6)   // tip
                 )
 
                 for (drop in droplets) {
                     val startSample = (drop.startMs * SAMPLE_RATE) / 1000
-                    val dropDurationSamples = (0.15 * SAMPLE_RATE).toInt()
+                    val dropDurationSamples = (0.15 * SAMPLE_RATE).toInt() // 150ms per drop
                     var dropPhase = 0.0
 
                     for (j in 0 until dropDurationSamples) {
@@ -104,9 +81,9 @@ object WaterSoundManager {
                         val t = j.toDouble() / SAMPLE_RATE
                         val progress = j.toDouble() / dropDurationSamples
 
-                        val freq = drop.freq + (1100f * Math.pow(progress, 0.4)).toFloat()
-                        val attack = if (t < 0.003) (t / 0.003) else 1.0
-                        val decay = exp(-24.0 * t)
+                        val freq = drop.freq + (1000f * Math.pow(progress, 0.5)).toFloat()
+                        val attack = if (t < 0.005) (t / 0.005) else 1.0
+                        val decay = exp(-25.0 * t)
                         val env = attack * decay * drop.vol
 
                         dropPhase += 2.0 * PI * freq / SAMPLE_RATE
@@ -166,3 +143,4 @@ object WaterSoundManager {
         }.start()
     }
 }
+

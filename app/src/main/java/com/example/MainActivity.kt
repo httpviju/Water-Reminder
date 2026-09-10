@@ -136,7 +136,9 @@ fun WaterApp(
                     uiState = uiState,
                     onAddWater = { amount -> viewModel.addWater(amount) },
                     onDeleteWater = { id -> viewModel.removeWaterLog(id) },
-                    onToggleReminder = { enabled -> viewModel.toggleReminder(enabled) }
+                    onToggleReminder = { enabled -> viewModel.toggleReminder(enabled) },
+                    onSetReminderInterval = { interval -> viewModel.setReminderInterval(interval) },
+                    onDismissAlarm = { viewModel.dismissAlarm() }
                 )
                 1 -> HistoryScreen(
                     uiState = uiState,

@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.CustomReminderDialog
 import com.example.ui.theme.BrightBlue
 import com.example.ui.theme.DeepBluePrimary
 import com.example.ui.theme.SpotifyGreen
@@ -77,6 +78,18 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var showResetDialog by remember { mutableStateOf(false) }
+    var showCustomReminderDialog by remember { mutableStateOf(false) }
+
+    if (showCustomReminderDialog) {
+        CustomReminderDialog(
+            currentInterval = uiState.reminderIntervalMinutes,
+            onDismiss = { showCustomReminderDialog = false },
+            onConfirm = { minutes ->
+                onSetReminderInterval(minutes)
+                showCustomReminderDialog = false
+            }
+        )
+    }
 
     if (showResetDialog) {
         AlertDialog(
@@ -157,7 +170,7 @@ fun SettingsScreen(
 
         // Reminder Interval & Water Sound Card
         item {
-            val intervals = listOf(30, 45, 60, 90, 120)
+            val quickIntervals = listOf(1, 2, 5, 10, 20, 30, 60)
             SettingsCard(
                 title = "Water Alarm & Reminders",
                 subtitle = "Sound alarm with real water droplet & pouring audio",
@@ -185,17 +198,33 @@ fun SettingsScreen(
 
                 if (uiState.reminderEnabled) {
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Reminder Interval",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Timer / Interval: ${uiState.reminderIntervalMinutes} min",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = SpotifyGreen
+                        )
+                        if (uiState.countdownText.isNotBlank()) {
+                            Text(
+                                text = "Next in: ${uiState.countdownText}",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        intervals.forEach { interval ->
+                        quickIntervals.forEach { interval ->
                             val isSelected = uiState.reminderIntervalMinutes == interval
                             FilterChip(
                                 selected = isSelected,
@@ -205,9 +234,37 @@ fun SettingsScreen(
                                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.testTag("chip_interval_${interval}")
+                            )
+                        }
+
+                        // If user chose an interval not in quickIntervals (e.g. 7 min, 15 min, 45 min)
+                        if (!quickIntervals.contains(uiState.reminderIntervalMinutes)) {
+                            FilterChip(
+                                selected = true,
+                                onClick = { showCustomReminderDialog = true },
+                                label = { Text("${uiState.reminderIntervalMinutes} min (Custom)") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
                                 shape = RoundedCornerShape(14.dp)
                             )
                         }
+
+                        // "+ Custom Min" Chip
+                        FilterChip(
+                            selected = false,
+                            onClick = { showCustomReminderDialog = true },
+                            label = { Text("⏱️ + Custom Min") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                labelColor = SpotifyGreen
+                            ),
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier.testTag("chip_custom_interval")
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))

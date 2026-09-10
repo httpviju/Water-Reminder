@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.WaterLog
 import com.example.ui.components.CustomIntakeDialog
+import com.example.ui.components.CustomReminderDialog
 import com.example.ui.components.DailyStatisticsCard
 import com.example.ui.components.HydrationProgressCircle
 import com.example.ui.components.NextReminderCard
@@ -61,9 +62,12 @@ fun HomeScreen(
     onAddWater: (Int) -> Unit,
     onDeleteWater: (Long) -> Unit,
     onToggleReminder: (Boolean) -> Unit,
+    onSetReminderInterval: (Int) -> Unit = {},
+    onDismissAlarm: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showCustomDialog by remember { mutableStateOf(false) }
+    var showCustomReminderDialog by remember { mutableStateOf(false) }
 
     if (showCustomDialog) {
         CustomIntakeDialog(
@@ -71,6 +75,17 @@ fun HomeScreen(
             onConfirm = { amount ->
                 onAddWater(amount)
                 showCustomDialog = false
+            }
+        )
+    }
+
+    if (showCustomReminderDialog) {
+        CustomReminderDialog(
+            currentInterval = uiState.reminderIntervalMinutes,
+            onDismiss = { showCustomReminderDialog = false },
+            onConfirm = { minutes ->
+                onSetReminderInterval(minutes)
+                showCustomReminderDialog = false
             }
         )
     }
@@ -118,7 +133,11 @@ fun HomeScreen(
                 nextReminderTime = uiState.nextReminderTime,
                 isEnabled = uiState.reminderEnabled,
                 intervalMinutes = uiState.reminderIntervalMinutes,
-                onToggle = onToggleReminder
+                countdownText = uiState.countdownText,
+                isAlarmRinging = uiState.isAlarmRinging,
+                onToggle = onToggleReminder,
+                onOpenTimerDialog = { showCustomReminderDialog = true },
+                onDismissAlarm = onDismissAlarm
             )
         }
 
